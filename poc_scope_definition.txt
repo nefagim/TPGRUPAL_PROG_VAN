@@ -1,0 +1,66 @@
+**Proof of Concept (PoC) - Scope Definition**
+
+**1. Analysis of Provided Information:**
+
+*   **Current System Technologies:**
+    *   **Java 8:** The PoC will be developed using Java 8.
+    *   **SQL Server:** The PoC will interact with a SQL Server database.
+    *   **JDBC DAOs (Data Access Objects):** The PoC may continue this pattern for data access, or consider lightweight ORMs if beneficial for PoC speed.
+    *   **Static Configurations:** The PoC will require a configuration management approach, potentially similar to the existing static methods.
+
+*   **Data Models:**
+    *   **Product Master (`Product Master Data`):** Core entity for product information (ID, name, description, category, price, etc.).
+    *   **Inventory Movement (`Inventory Movement Data`):** Records transactional changes in inventory (movement ID, product ID, timestamp, type, quantity).
+    *   **Current Stock (`Current Stock Data`):** Represents real-time quantity of each product (product ID, current quantity). Updated by `Inventory Movement Data`.
+    *   **Predictor Stock (`Predictor Stock Data`):** Forecasted stock levels (product ID, prediction date, predicted quantity). Simplified for PoC.
+
+**2. Defined Scope for the Proof of Concept (PoC):**
+
+*   **A. Core Functionality:**
+
+    1.  **Product Management (`Product Master Data`):**
+        *   **Objective:** Manage the lifecycle of products.
+        *   **Features:** CRUD operations (Create, Read, Update, Delete - logical delete preferred) for products.
+        *   **Data Model:** `Product Master Data`.
+
+    2.  **Inventory Movement Recording and Stock Update:**
+        *   **Objective:** Track inventory changes and update current stock.
+        *   **Features:**
+            *   Record new inventory movements (IN/OUT, quantity, product ID, timestamp).
+            *   Automatically update `Current Stock Data` based on these movements.
+        *   **Data Models:** `Inventory Movement Data`, `Current Stock Data`.
+        *   **Technical Note:** Application-level service to update stock after movement recording is suitable for PoC.
+
+    3.  **Basic Predictor Stock Placeholder:**
+        *   **Objective:** Demonstrate the predictive stock concept simply.
+        *   **Features:**
+            *   Simple calculation for `Predictor Stock` (e.g., `Current Stock * constant factor`, or based on a very simple rule).
+            *   View basic predicted stock for a product.
+        *   **Data Models:** `Predictor Stock Data` (conceptual, likely calculated on-the-fly), `Current Stock Data`.
+
+*   **B. Non-Functional / Supporting Features:**
+
+    1.  **Basic User Registration and Authentication:**
+        *   **Objective:** Secure the PoC and identify users.
+        *   **Features:** User registration (username/password), login (issuing a token/session), and API authentication.
+        *   **Technical Note:** Secure password storage. Simple user store (dedicated table or in-memory for PoC).
+
+    2.  **REST API Exposure:**
+        *   **Objective:** Provide a standard interface to all PoC functionalities.
+        *   **Features:**
+            *   Endpoints for Product Management CRUD.
+            *   Endpoint for recording inventory movements.
+            *   Endpoints for viewing current and predicted stock.
+            *   Endpoints for user registration and login.
+        *   **Technical Note:** Use a Java REST framework (e.g., Spring Boot, JAX-RS). Follow RESTful principles.
+
+**3. Out of Scope for PoC:**
+
+*   Complex UI/Frontend.
+*   Advanced analytics or reporting.
+*   Full ML model for `Predictor Stock`.
+*   Extensive error handling, logging, scalability, and performance optimization.
+*   Deployment automation.
+*   Detailed data validation and complex user roles/permissions.
+
+This scope aims to deliver a working API-driven slice of the system, demonstrating core functionalities with the specified technologies.
