@@ -60,6 +60,9 @@ public class WebSecurityConfig {
                 .authorizeHttpRequests(auth ->
                         auth.requestMatchers("/api/auth/**").permitAll()
                                 .requestMatchers("/api/products/**").authenticated() // Secure product APIs
+                                .requestMatchers("/api/predictions/**").hasAnyRole("MANAGER", "ADMIN") // Secure prediction APIs
+                                .requestMatchers("/api/stock/**").hasAnyRole("MANAGER", "ADMIN") // Secure stock APIs
+                                .requestMatchers("/api/salesorders/**").hasAnyRole("MANAGER", "ADMIN") // Secure sales order APIs
                                 .requestMatchers("/h2-console/**").permitAll() // Allow H2 console access
                                 .anyRequest().authenticated()
                 );
