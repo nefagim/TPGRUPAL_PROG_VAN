@@ -3,6 +3,7 @@ package com.empresa.demostockapp.service.export;
 import com.empresa.demostockapp.dto.export.SalesDataExportDTO;
 import com.empresa.demostockapp.model.Product;
 import com.empresa.demostockapp.model.SalesOrder;
+import com.empresa.demostockapp.model.Category; // Added import
 import com.empresa.demostockapp.repository.SalesOrderRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -34,6 +35,8 @@ class DataExportServiceTest {
     private DataExportService dataExportService;
 
     private Product product1;
+    private Product product2; // Added for no-category testing
+    private Category category1; // Added
     private SalesOrder salesOrder1, salesOrder2;
     private LocalDate startDate;
     private LocalDate endDate;
@@ -43,10 +46,13 @@ class DataExportServiceTest {
 
     @BeforeEach
     void setUp() {
-        product1 = new Product("Test Product", "Description", BigDecimal.TEN, "SKU001");
+        category1 = new Category("Electronics", "Electronic devices");
+        category1.setId(10L);
+
+        product1 = new Product("Test Product", "Description", BigDecimal.TEN, "SKU001", category1); // Assign category
         product1.setId(1L);
 
-        Product product2 = new Product("Another Product", "Description", BigDecimal.ONE, "SKU002");
+        product2 = new Product("Another Product", "Description", BigDecimal.ONE, "SKU002", null); // No category
         product2.setId(2L);
 
         salesOrder1 = new SalesOrder(product1, 5, BigDecimal.valueOf(50));
@@ -65,6 +71,7 @@ class DataExportServiceTest {
 
     @Test
     void getSalesDataForExport_withProductId_success() {
+        // product1 has category1 ("Electronics")
         when(salesOrderRepository.findByProductIdAndOrderDateBetween(
                 eq(1L), any(LocalDateTime.class), any(LocalDateTime.class)))
                 .thenReturn(List.of(salesOrder1));
@@ -78,6 +85,7 @@ class DataExportServiceTest {
         assertEquals(product1.getId(), dto.getProductId());
         assertEquals(product1.getName(), dto.getProductName());
         assertEquals(salesOrder1.getQuantitySold(), dto.getQuantitySold());
+        assertEquals(category1.getName(), dto.getCategoryName()); // Assert category name
 
         verify(salesOrderRepository).findByProductIdAndOrderDateBetween(eq(1L), eq(startDateTime), eq(endDateTime));
         verify(salesOrderRepository, never()).findAllByOrderDateBetween(any(LocalDateTime.class), any(LocalDateTime.class));
@@ -85,6 +93,7 @@ class DataExportServiceTest {
 
     @Test
     void getSalesDataForExport_withoutProductId_success() {
+        // salesOrder1's product has category, salesOrder2's product does not
         when(salesOrderRepository.findAllByOrderDateBetween(
                 any(LocalDateTime.class), any(LocalDateTime.class)))
                 .thenReturn(List.of(salesOrder1, salesOrder2));
@@ -93,6 +102,15 @@ class DataExportServiceTest {
 
         assertNotNull(result);
         assertEquals(2, result.size());
+
+        SalesDataExportDTO dto1 = result.stream().filter(dto -> dto.getOrderId().equals(salesOrder1.getId())).findFirst().orElse(null);
+        assertNotNull(dto1);
+        assertEquals(category1.getName(), dto1.getCategoryName());
+
+        SalesDataExportDTO dto2 = result.stream().filter(dto -> dto.getOrderId().equals(salesOrder2.getId())).findFirst().orElse(null);
+        assertNotNull(dto2);
+        assertNull(dto2.getCategoryName()); // Assert category name is null for product2
+
         verify(salesOrderRepository, never()).findByProductIdAndOrderDateBetween(anyLong(), any(LocalDateTime.class), any(LocalDateTime.class));
         verify(salesOrderRepository).findAllByOrderDateBetween(eq(startDateTime), eq(endDateTime));
     }

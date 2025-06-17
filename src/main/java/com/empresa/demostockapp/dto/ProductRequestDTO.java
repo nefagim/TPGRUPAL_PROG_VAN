@@ -19,14 +19,18 @@ public class ProductRequestDTO {
     @NotBlank(message = "SKU cannot be blank")
     private String sku;
 
+    private Long categoryId; // Added categoryId
+
     public ProductRequestDTO() {
     }
 
-    public ProductRequestDTO(String name, String description, BigDecimal price, String sku) {
+    // Updated constructor
+    public ProductRequestDTO(String name, String description, BigDecimal price, String sku, Long categoryId) {
         this.name = name;
         this.description = description;
         this.price = price;
         this.sku = sku;
+        this.categoryId = categoryId;
     }
 
     public String getName() {
@@ -59,5 +63,14 @@ public class ProductRequestDTO {
 
     public void setSku(String sku) {
         this.sku = sku;
+    }
+
+    // Getter and Setter for categoryId
+    public Long getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(Long categoryId) {
+        this.categoryId = categoryId;
     }
 }

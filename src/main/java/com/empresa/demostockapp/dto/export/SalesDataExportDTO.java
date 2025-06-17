@@ -12,6 +12,7 @@ public class SalesDataExportDTO {
     private Integer quantitySold;
     private BigDecimal sellingPrice;
     private LocalDateTime orderDate;
+    private String categoryName; // Added field
 
     public SalesDataExportDTO() {
     }
@@ -21,6 +22,11 @@ public class SalesDataExportDTO {
         if (salesOrder.getProduct() != null) {
             this.productId = salesOrder.getProduct().getId();
             this.productName = salesOrder.getProduct().getName();
+            if (salesOrder.getProduct().getCategory() != null) {
+                this.categoryName = salesOrder.getProduct().getCategory().getName();
+            } else {
+                this.categoryName = null; // Or an empty string, as preferred
+            }
         }
         this.quantitySold = salesOrder.getQuantitySold();
         this.sellingPrice = salesOrder.getSellingPrice();
@@ -52,6 +58,10 @@ public class SalesDataExportDTO {
         return orderDate;
     }
 
+    public String getCategoryName() { // Added getter
+        return categoryName;
+    }
+
     // Setters
     public void setOrderId(Long orderId) {
         this.orderId = orderId;
@@ -75,5 +85,9 @@ public class SalesDataExportDTO {
 
     public void setOrderDate(LocalDateTime orderDate) {
         this.orderDate = orderDate;
+    }
+
+    public void setCategoryName(String categoryName) { // Added setter
+        this.categoryName = categoryName;
     }
 }

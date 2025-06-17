@@ -1,9 +1,12 @@
 package com.empresa.demostockapp.service;
 
 import com.empresa.demostockapp.dto.ProductRequestDTO;
+import com.empresa.demostockapp.dto.ProductRequestDTO;
 import com.empresa.demostockapp.dto.ProductResponseDTO;
 import com.empresa.demostockapp.exception.ResourceNotFoundException;
+import com.empresa.demostockapp.model.Category; // Added
 import com.empresa.demostockapp.model.Product;
+import com.empresa.demostockapp.repository.CategoryRepository; // Added
 import com.empresa.demostockapp.repository.ProductRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,9 +18,11 @@ import java.util.stream.Collectors;
 public class ProductService {
 
     private final ProductRepository productRepository;
+    private final CategoryRepository categoryRepository; // Added
 
-    public ProductService(ProductRepository productRepository) {
+    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository) { // Updated constructor
         this.productRepository = productRepository;
+        this.categoryRepository = categoryRepository; // Added
     }
 
     @Transactional
@@ -31,6 +36,12 @@ public class ProductService {
         product.setDescription(productRequestDTO.getDescription());
         product.setPrice(productRequestDTO.getPrice());
         product.setSku(productRequestDTO.getSku());
+
+        if (productRequestDTO.getCategoryId() != null) {
+            Category category = categoryRepository.findById(productRequestDTO.getCategoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + productRequestDTO.getCategoryId()));
+            product.setCategory(category);
+        }
 
         Product savedProduct = productRepository.save(product);
         return convertToDTO(savedProduct);
@@ -52,24 +63,32 @@ public class ProductService {
 
     @Transactional
     public ProductResponseDTO updateProduct(Long id, ProductRequestDTO productRequestDTO) {
-        Product product = productRepository.findById(id)
+        Product existingProduct = productRepository.findById(id) // Renamed product to existingProduct for clarity
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + id));
 
         // Check if SKU is being changed and if the new SKU already exists for another product
-        if (!product.getSku().equals(productRequestDTO.getSku())) {
-            productRepository.findBySku(productRequestDTO.getSku()).ifPresent(existingProduct -> {
-                if (!existingProduct.getId().equals(id)) {
+        if (!existingProduct.getSku().equals(productRequestDTO.getSku())) {
+            productRepository.findBySku(productRequestDTO.getSku()).ifPresent(p -> { // Renamed existingProduct to p
+                if (!p.getId().equals(id)) {
                     throw new IllegalArgumentException("New SKU already exists for another product: " + productRequestDTO.getSku());
                 }
             });
         }
 
-        product.setName(productRequestDTO.getName());
-        product.setDescription(productRequestDTO.getDescription());
-        product.setPrice(productRequestDTO.getPrice());
-        product.setSku(productRequestDTO.getSku());
+        existingProduct.setName(productRequestDTO.getName());
+        existingProduct.setDescription(productRequestDTO.getDescription());
+        existingProduct.setPrice(productRequestDTO.getPrice());
+        existingProduct.setSku(productRequestDTO.getSku());
 
-        Product updatedProduct = productRepository.save(product);
+        if (productRequestDTO.getCategoryId() != null) {
+            Category category = categoryRepository.findById(productRequestDTO.getCategoryId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Category not found with id: " + productRequestDTO.getCategoryId()));
+            existingProduct.setCategory(category);
+        } else {
+            existingProduct.setCategory(null); // Allow unsetting category
+        }
+
+        Product updatedProduct = productRepository.save(existingProduct);
         return convertToDTO(updatedProduct);
     }
 
@@ -81,12 +100,7 @@ public class ProductService {
     }
 
     private ProductResponseDTO convertToDTO(Product product) {
-        return new ProductResponseDTO(
-                product.getId(),
-                product.getName(),
-                product.getDescription(),
-                product.getPrice(),
-                product.getSku()
-        );
+        // Uses the new constructor: public ProductResponseDTO(Product product)
+        return new ProductResponseDTO(product);
     }
 }
