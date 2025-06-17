@@ -8,4 +8,5 @@ import java.util.List;
 public interface SalesOrderRepository extends JpaRepository<SalesOrder, Long> {
     List<SalesOrder> findByProductId(Long productId);
     List<SalesOrder> findByProductIdAndOrderDateBetween(Long productId, LocalDateTime startDate, LocalDateTime endDate);
+    List<SalesOrder> findAllByOrderDateBetween(LocalDateTime startDate, LocalDateTime endDate);
 }
