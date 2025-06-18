@@ -1,0 +1,44 @@
+version: '3.8' # Specify docker-compose version
+
+services:
+  app:
+    build: . # Build the image from the Dockerfile in the current directory
+    container_name: demostockapp-app
+    ports:
+      - "8080:8080" # Map host port 8080 to container port 8080
+    environment:
+      - SPRING_PROFILES_ACTIVE=dockercompose
+      - DB_USERNAME_DC=stockuser    # This will be used by Spring Boot app (via application-dockercompose.properties)
+      - DB_PASSWORD_DC=stockpass    # This will be used by Spring Boot app
+      # The JDBC URL in application-dockercompose.properties points to 'db:5432/stockapp_db'
+    depends_on:
+      db:
+        condition: service_healthy # Wait for db to be healthy before starting app
+    networks:
+      - stockapp-network
+
+  db:
+    image: postgres:15 # Use official PostgreSQL image, version 15
+    container_name: demostockapp-db
+    ports:
+      - "5433:5432" # Map host port 5433 to container port 5432 (to avoid conflict if local Postgres runs on 5432)
+    environment:
+      - POSTGRES_DB=stockapp_db
+      - POSTGRES_USER=stockuser    # This is for PostgreSQL itself
+      - POSTGRES_PASSWORD=stockpass  # This is for PostgreSQL itself
+    volumes:
+      - postgres_stockapp_data:/var/lib/postgresql/data # Persist data in a named volume
+    healthcheck: # Check for DB readiness
+      test: ["CMD-SHELL", "pg_isready -U stockuser -d stockapp_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - stockapp-network
+
+volumes:
+  postgres_stockapp_data: # Define the named volume
+
+networks:
+  stockapp-network:
+    driver: bridge

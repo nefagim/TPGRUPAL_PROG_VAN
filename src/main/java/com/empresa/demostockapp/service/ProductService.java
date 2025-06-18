@@ -5,9 +5,15 @@ import com.empresa.demostockapp.dto.ProductRequestDTO;
 import com.empresa.demostockapp.dto.ProductResponseDTO;
 import com.empresa.demostockapp.exception.ResourceNotFoundException;
 import com.empresa.demostockapp.model.Category; // Added
+import com.empresa.demostockapp.dto.ProductRequestDTO;
+import com.empresa.demostockapp.dto.ProductResponseDTO;
+import com.empresa.demostockapp.dto.stock.StockItemResponseDTO; // Added
+import com.empresa.demostockapp.exception.ResourceNotFoundException;
+import com.empresa.demostockapp.model.Category;
 import com.empresa.demostockapp.model.Product;
-import com.empresa.demostockapp.repository.CategoryRepository; // Added
+import com.empresa.demostockapp.repository.CategoryRepository;
 import com.empresa.demostockapp.repository.ProductRepository;
+import com.empresa.demostockapp.service.stock.StockService; // Added
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,11 +24,15 @@ import java.util.stream.Collectors;
 public class ProductService {
 
     private final ProductRepository productRepository;
-    private final CategoryRepository categoryRepository; // Added
+    private final CategoryRepository categoryRepository;
+    private final StockService stockService; // Added
 
-    public ProductService(ProductRepository productRepository, CategoryRepository categoryRepository) { // Updated constructor
+    public ProductService(ProductRepository productRepository,
+                          CategoryRepository categoryRepository,
+                          StockService stockService) { // Updated constructor
         this.productRepository = productRepository;
-        this.categoryRepository = categoryRepository; // Added
+        this.categoryRepository = categoryRepository;
+        this.stockService = stockService; // Added
     }
 
     @Transactional
@@ -100,7 +110,16 @@ public class ProductService {
     }
 
     private ProductResponseDTO convertToDTO(Product product) {
-        // Uses the new constructor: public ProductResponseDTO(Product product)
-        return new ProductResponseDTO(product);
+        // Uses the constructor: public ProductResponseDTO(Product product)
+        // then sets quantity separately
+        ProductResponseDTO dto = new ProductResponseDTO(product);
+
+        // Fetch and set stock quantity
+        // Note: This introduces an N+1 potential in getAllProducts if not handled carefully.
+        // For this iteration, we accept it. Future optimization could batch these calls.
+        StockItemResponseDTO stockInfo = stockService.getStockByProductId(product.getId());
+        dto.setQuantity(stockInfo.getQuantity());
+
+        return dto;
     }
 }

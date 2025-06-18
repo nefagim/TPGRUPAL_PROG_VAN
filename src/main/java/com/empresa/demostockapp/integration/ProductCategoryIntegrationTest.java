@@ -134,6 +134,7 @@ public class ProductCategoryIntegrationTest {
                 .andExpect(status().isCreated())
                 .andExpect(jsonPath("$.name", is("Integration Product")))
                 .andExpect(jsonPath("$.category.id", is(createdCategoryId.intValue())))
+                .andExpect(jsonPath("$.quantity", is(0))) // Assert default quantity
                 .andReturn();
         createdProductId = extractId(result);
         assertNotNull(createdProductId);
@@ -151,7 +152,8 @@ public class ProductCategoryIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name", is("Integration Product")))
                 .andExpect(jsonPath("$.category.id", is(createdCategoryId.intValue())))
-                .andExpect(jsonPath("$.category.name", is("Integration Test Category")));
+                .andExpect(jsonPath("$.category.name", is("Integration Test Category")))
+                .andExpect(jsonPath("$.quantity", is(0))); // Assert default quantity
     }
 
     @Test
@@ -173,6 +175,7 @@ public class ProductCategoryIntegrationTest {
                         .content(objectMapper.writeValueAsString(updatedProductDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name", is("Updated Integration Product")))
+                .andExpect(jsonPath("$.quantity", is(0))) // Quantity should be unaffected
                 .andExpect(jsonPath("$.category", is(nullValue())));
     }
 
@@ -186,6 +189,7 @@ public class ProductCategoryIntegrationTest {
                         .header("Authorization", "Bearer " + ADMIN_TOKEN))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name", is("Updated Integration Product")))
+                .andExpect(jsonPath("$.quantity", is(0))) // Quantity should be unaffected
                 .andExpect(jsonPath("$.category", is(nullValue())));
     }
 
@@ -218,6 +222,7 @@ public class ProductCategoryIntegrationTest {
                         .content(objectMapper.writeValueAsString(updatedProductDto)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.name", is("Product With Another Category")))
+                .andExpect(jsonPath("$.quantity", is(0))) // Quantity should be unaffected
                 .andExpect(jsonPath("$.category.id", is(anotherCategoryId.intValue())))
                 .andExpect(jsonPath("$.category.name", is("Another Category")));
 
@@ -300,6 +305,7 @@ public class ProductCategoryIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(prodDto)))
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.quantity", is(0))) // Assert default quantity
                 .andReturn();
         Long productUsingCatId = extractId(prodResult);
 

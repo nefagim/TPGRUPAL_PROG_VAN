@@ -132,6 +132,9 @@ public class SalesStockExportIntegrationTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(productDto)))
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name", is("Sales Test Product"))) // Existing check
+                .andExpect(jsonPath("$.category.id", is(testCategoryId.intValue()))) // Existing check
+                .andExpect(jsonPath("$.quantity", is(0))) // Assert default quantity
                 .andReturn();
         testProductId = extractId(prodResult);
         assertNotNull(testProductId);

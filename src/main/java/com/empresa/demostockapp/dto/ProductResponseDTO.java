@@ -12,18 +12,20 @@ public class ProductResponseDTO {
     private BigDecimal price;
     private String sku;
     private CategoryResponseDTO category; // Added category field
+    private Integer quantity; // Added quantity field
 
     public ProductResponseDTO() {
     }
 
     // Existing constructor - can be kept or removed if the new one is preferred
-    public ProductResponseDTO(Long id, String name, String description, BigDecimal price, String sku, CategoryResponseDTO category) {
+    public ProductResponseDTO(Long id, String name, String description, BigDecimal price, String sku, CategoryResponseDTO category, Integer quantity) {
         this.id = id;
         this.name = name;
         this.description = description;
         this.price = price;
         this.sku = sku;
         this.category = category;
+        this.quantity = quantity;
     }
 
     // New constructor from Product entity
@@ -87,5 +89,13 @@ public class ProductResponseDTO {
 
     public void setCategory(CategoryResponseDTO category) {
         this.category = category;
+    }
+
+    public Integer getQuantity() {
+        return quantity;
+    }
+
+    public void setQuantity(Integer quantity) {
+        this.quantity = quantity;
     }
 }
